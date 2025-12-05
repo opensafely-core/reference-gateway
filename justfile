@@ -168,8 +168,14 @@ fix:
     -uv run ruff format .
     -just --fmt --unstable
 
-# Run the dev project
-run: devenv
-    echo "Not implemented yet"
-    # E.g. uv run python manage.py runserver
-    # Note: devenv prerequisite can be removed if using uv run
+# Run manage.py commands
+manage *args:
+    uv run python manage.py "$@"
+
+# Run development server
+run *args:
+    just manage runserver "$@"
+
+# Run Django shell
+shell *args:
+    just manage shell "$@"
