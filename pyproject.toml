@@ -1,7 +1,7 @@
 [project]
-name = "repo-template"
+name = "reference-gateway"
 version = "0.1.0"
-description = "Add your description here"
+description = "An experimental minimal interface for an OpenSAFELY secure backend"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
