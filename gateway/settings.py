@@ -148,3 +148,18 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Per-deployment configuration
+
+# The GitHub organisation containing researchers' code
+GITHUB_ORG = get_env_var("GITHUB_ORG")
+
+# The identifier of the OpenSAFELY backend
+OPENSAFELY_BACKEND = get_env_var("OPENSAFELY_BACKEND")
+
+# The URL of the RAP Controller
+RAP_CONTROLLER_URL = get_env_var("RAP_CONTROLLER_URL").rstrip("/")
+
+# The token shared with the RAP Controller
+RAP_CONTROLLER_TOKEN = get_env_var("RAP_CONTROLLER_TOKEN")
