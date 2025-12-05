@@ -37,8 +37,8 @@ def test_get_latest_commit():
 
 
 @contextmanager
-def mocked_response(response):
+def mocked_response(data):
     mock_response = Mock()
-    mock_response.json.return_value = response
+    mock_response.json.return_value = data
     with patch("gateway.github.httpx.get", return_value=mock_response):
         yield
