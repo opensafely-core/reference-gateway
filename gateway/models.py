@@ -1,5 +1,8 @@
+import enum
+
 from django.conf import settings
 from django.db import models
+from django_enum import EnumField
 
 
 class GitHubProfile(models.Model):
@@ -20,6 +23,13 @@ class Project(models.Model):
 
 
 class Run(models.Model):
+    class State(enum.Enum):
+        PENDING = "pending"
+        RUNNING = "running"
+        SUCCEEDED = "succeeded"
+        FAILED = "failed"
+        CANCELLED = "cancelled"
+
     id = models.CharField(primary_key=True, max_length=16)
     project = models.ForeignKey(
         Project,
@@ -31,17 +41,44 @@ class Run(models.Model):
         on_delete=models.CASCADE,
         related_name="runs",
     )
+    cancelled = models.BooleanField(default=False)
+
+    @property
+    def actions(self):
+        return {job.action for job in self.jobs.all()}
+
+    @property
+    def state(self):
+        if self.cancelled:
+            return Run.State.CANCELLED
+
+        job_states = [job.state for job in self.jobs.all()]
+        if all(state == Job.State.PENDING for state in job_states):
+            return Run.State.PENDING
+        if all(state == Job.State.SUCCEEDED for state in job_states):
+            return Run.State.SUCCEEDED
+        if any(state == Job.State.FAILED for state in job_states):
+            return Run.State.FAILED
+        else:
+            return Run.State.RUNNING
 
 
 class Job(models.Model):
+    class State(enum.Enum):
+        # These match the values defined in job-runner's controller.models.State.
+        PENDING = "pending"
+        RUNNING = "running"
+        SUCCEEDED = "succeeded"
+        FAILED = "failed"
+
+    id = models.CharField(primary_key=True, max_length=16)
     run = models.ForeignKey(
         Run,
         on_delete=models.CASCADE,
         related_name="jobs",
     )
     action = models.CharField(max_length=200)
-    status_code = models.CharField(max_length=100)
-    status_message = models.CharField(max_length=100)
+    state = EnumField(State)
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)

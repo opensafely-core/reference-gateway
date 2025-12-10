@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "django>=5.2.8",
+    "django-enum>=2.3.0",
     "httpx>=0.28.1",
 ]
 
@@ -25,6 +26,7 @@ show_missing = true
 show_contexts = true
 
 [tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "gateway.settings"
 
 [tool.ruff]
 line-length = 88
@@ -70,6 +72,7 @@ dev = [
     "coverage>=7.10.6",
     "pre-commit>=4.3.0",
     "pytest>=8.4.1",
+    "pytest-django>=4.11.1",
     "pyyaml>=6.0.2",
     "ruff>=0.12.11",
 ]

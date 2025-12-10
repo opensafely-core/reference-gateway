@@ -29,7 +29,7 @@ def create(*, rap_id, project, commit, username):
     return post_json("/rap/create/", payload)
 
 
-def cancel(rap_id, actions):
+def cancel(*, rap_id, actions):
     payload = {
         "rap_id": rap_id,
         "actions": actions,
@@ -37,7 +37,7 @@ def cancel(rap_id, actions):
     return post_json("/rap/cancel/", payload)
 
 
-def status(rap_ids):
+def status(*, rap_ids):
     payload = {"rap_ids": rap_ids}
     return post_json("/rap/status/", payload)
 
