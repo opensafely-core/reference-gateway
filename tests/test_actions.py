@@ -18,7 +18,7 @@ from gateway.models import Job, Run
 def test_start_run(project, user, monkeypatch):
     rap_id = "abcd1234efgh5678"
     commit_sha = "commit-sha"
-    github_api_data = [
+    github_data = [
         {
             "sha": commit_sha,
             "commit": {"message": "Example commit"},
@@ -33,7 +33,7 @@ def test_start_run(project, user, monkeypatch):
 
     monkeypatch.setattr("gateway.actions._generate_rap_id", lambda: rap_id)
 
-    with mocked_responses(github_data=github_api_data, rap_api_data=rap_api_data):
+    with mocked_responses(github_data=github_data, rap_api_data=rap_api_data):
         run = start_run(project=project, user=user)
 
     assert run.id == rap_id
