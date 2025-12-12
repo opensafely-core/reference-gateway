@@ -164,3 +164,8 @@ RAP_CONTROLLER_URL = get_env_var("RAP_CONTROLLER_URL").rstrip("/")
 
 # The token shared with the RAP Controller
 RAP_CONTROLLER_TOKEN = get_env_var("RAP_CONTROLLER_TOKEN")
+
+# The token used to query GitHub; it must have access to the GITHUB_ORG, with read
+# access to members (under organization permissions) and read access to code and
+# metadata (under repository permissions)
+GITHUB_TOKEN = get_env_var("GITHUB_TOKEN")

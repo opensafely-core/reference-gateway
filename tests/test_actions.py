@@ -2,6 +2,7 @@ import re
 from contextlib import contextmanager
 from unittest.mock import Mock, patch
 
+from django.contrib.auth.models import User
 from django.utils.dateparse import parse_datetime
 
 from gateway.actions import (
@@ -9,10 +10,94 @@ from gateway.actions import (
     _create_run,
     _generate_rap_id,
     cancel_run,
+    create_or_update_projects,
+    create_or_update_users,
     start_run,
     update_run,
 )
-from gateway.models import Job, Run
+from gateway.models import Job, Project, Run
+
+
+def test_create_or_update_projects():
+    github_data_1 = [
+        {"id": 123, "name": "test-1", "description": "Description"},
+        {"id": 456, "name": "test-2", "description": "Description"},
+    ]
+    github_data_2 = [
+        {"id": 123, "name": "updated-test-1", "description": "Updated description"},
+        {"id": 789, "name": "test-3", "description": "Description"},
+    ]
+
+    with mocked_responses(github_data=github_data_1):
+        create_or_update_projects()
+
+    assert Project.objects.count() == 2
+
+    p1 = Project.objects.get(pk=123)
+    assert p1.name == "test-1"
+    assert p1.description == "Description"
+
+    p2 = Project.objects.get(pk=456)
+    assert p2.name == "test-2"
+    assert p2.description == "Description"
+
+    with mocked_responses(github_data=github_data_2):
+        create_or_update_projects()
+
+    assert Project.objects.count() == 3
+
+    p1 = Project.objects.get(pk=123)
+    assert p1.name == "updated-test-1"
+    assert p1.description == "Updated description"
+
+    p2 = Project.objects.get(pk=456)
+    assert p2.name == "test-2"
+    assert p2.description == "Description"
+
+    p3 = Project.objects.get(pk=789)
+    assert p3.name == "test-3"
+    assert p3.description == "Description"
+
+
+def test_create_or_update_users():
+    github_data_1 = [
+        {"id": 123, "login": "test-1"},
+        {"id": 456, "login": "test-2"},
+    ]
+    github_data_2 = [
+        {"id": 123, "login": "updated-test-1"},
+        {"id": 789, "login": "test-3"},
+    ]
+
+    with mocked_responses(github_data=github_data_1):
+        create_or_update_users()
+
+    assert User.objects.count() == 2
+
+    u1 = User.objects.get(profile__github_id=123)
+    assert u1.username == "test-1"
+    assert u1.is_active
+
+    u2 = User.objects.get(profile__github_id=456)
+    assert u2.username == "test-2"
+    assert u2.is_active
+
+    with mocked_responses(github_data=github_data_2):
+        create_or_update_users()
+
+    assert User.objects.count() == 3
+
+    u1 = User.objects.get(profile__github_id=123)
+    assert u1.username == "updated-test-1"
+    assert u1.is_active
+
+    u2 = User.objects.get(profile__github_id=456)
+    assert u2.username == "test-2"
+    assert not u2.is_active
+
+    u3 = User.objects.get(profile__github_id=789)
+    assert u3.username == "test-3"
+    assert u3.is_active
 
 
 def test_start_run(project, user, monkeypatch):

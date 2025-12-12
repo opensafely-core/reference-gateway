@@ -6,9 +6,7 @@ from django_enum import EnumField
 
 
 class GitHubProfile(models.Model):
-    id = models.IntegerField(primary_key=True)
-    # 39 is the maximum length of a GitHub username
-    username = models.CharField(max_length=39)
+    github_id = models.IntegerField(primary_key=True)
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -17,7 +15,8 @@ class GitHubProfile(models.Model):
 
 
 class Project(models.Model):
-    slug = models.SlugField(unique=True)
+    id = models.IntegerField(primary_key=True)
+    name = models.SlugField(unique=True)
     # 350 is the maximum length of a description in the GitHub web UI
     description = models.CharField(max_length=350, blank=True)
 

@@ -1,5 +1,5 @@
 # The GitHub organisation containing researchers' code
-GITHUB_ORG=opensafely
+GITHUB_ORG=opensafely-demo
 
 # The identifier of the OpenSAFELY backend
 OPENSAFELY_BACKEND=test
@@ -9,3 +9,6 @@ RAP_CONTROLLER_URL=http://localhost:3000/controller/v1
 
 # The token shared with the RAP Controller
 RAP_CONTROLLER_TOKEN=rap_token
+
+# The token used to query GitHub
+GITHUB_TOKEN=

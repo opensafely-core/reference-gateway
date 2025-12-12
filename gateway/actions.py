@@ -2,9 +2,37 @@ import base64
 import secrets
 
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from . import github, rap_api
-from .models import Job, Run
+from .models import GitHubProfile, Job, Project, Run
+
+
+def create_or_update_projects():
+    for record in github.get_repo_metadata(settings.GITHUB_ORG):
+        Project.objects.update_or_create(
+            id=record["id"],
+            defaults={
+                "name": record["name"],
+                "description": record["description"] or "",
+            },
+        )
+
+
+def create_or_update_users():
+    User.objects.update(is_active=False)
+    for record in github.get_user_metadata(settings.GITHUB_ORG):
+        github_id = record["id"]
+        if GitHubProfile.objects.filter(github_id=github_id).exists():
+            user = User.objects.get(profile__github_id=github_id)
+            user.is_active = True
+            user.username = record["login"]
+            user.save()
+        else:
+            GitHubProfile.objects.create(
+                github_id=github_id,
+                user=User.objects.create_user(username=record["login"]),
+            )
 
 
 def start_run(*, project, user):
@@ -12,9 +40,9 @@ def start_run(*, project, user):
     Start a run for the given project.
     """
     rap_id = _generate_rap_id()
-    commit = github.get_latest_commit(settings.GITHUB_ORG, project.slug)
+    commit = github.get_latest_commit(settings.GITHUB_ORG, project.name)
     rap_api.create(
-        rap_id=rap_id, project=project, commit=commit, username=user.profile.username
+        rap_id=rap_id, project=project, commit=commit, username=user.username
     )
     return _create_run(rap_id=rap_id, project=project, user=user)
 
