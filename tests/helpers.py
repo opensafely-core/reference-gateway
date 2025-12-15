@@ -3,17 +3,17 @@ from unittest.mock import Mock, patch
 
 
 @contextmanager
-def mocked_responses(*, github_data=None, rap_api_data=None):
-    github_httpx_rsp = Mock()
-    github_httpx_rsp.json.return_value = github_data
-    github_httpx_rsp.raise_for_status.return_value = None
+def mocked_responses(*, get_data=None, post_data=None):
+    get_rsp = Mock()
+    get_rsp.json.return_value = get_data
+    get_rsp.raise_for_status.return_value = None
 
-    rap_api_httpx_rsp = Mock()
-    rap_api_httpx_rsp.json.return_value = rap_api_data
-    rap_api_httpx_rsp.raise_for_status.return_value = None
+    post_rsp = Mock()
+    post_rsp.json.return_value = post_data
+    post_rsp.raise_for_status.return_value = None
 
     with (
-        patch("gateway.github.httpx.get", return_value=github_httpx_rsp),
-        patch("gateway.rap_api.httpx.post", return_value=rap_api_httpx_rsp),
+        patch("httpx.get", return_value=get_rsp),
+        patch("httpx.post", return_value=post_rsp),
     ):
         yield

@@ -28,7 +28,7 @@ def test_create_or_update_projects():
         {"id": 789, "name": "test-3", "description": "Description"},
     ]
 
-    with mocked_responses(github_data=github_data_1):
+    with mocked_responses(get_data=github_data_1):
         create_or_update_projects()
 
     assert Project.objects.count() == 2
@@ -41,7 +41,7 @@ def test_create_or_update_projects():
     assert p2.name == "test-2"
     assert p2.description == "Description"
 
-    with mocked_responses(github_data=github_data_2):
+    with mocked_responses(get_data=github_data_2):
         create_or_update_projects()
 
     assert Project.objects.count() == 3
@@ -69,7 +69,7 @@ def test_create_or_update_users():
         {"id": 789, "login": "test-3"},
     ]
 
-    with mocked_responses(github_data=github_data_1):
+    with mocked_responses(get_data=github_data_1):
         create_or_update_users()
 
     assert User.objects.count() == 2
@@ -82,7 +82,7 @@ def test_create_or_update_users():
     assert u2.username == "test-2"
     assert u2.is_active
 
-    with mocked_responses(github_data=github_data_2):
+    with mocked_responses(get_data=github_data_2):
         create_or_update_users()
 
     assert User.objects.count() == 3
@@ -118,7 +118,7 @@ def test_start_run(project, user, monkeypatch):
 
     monkeypatch.setattr("gateway.actions._generate_rap_id", lambda: rap_id)
 
-    with mocked_responses(github_data=github_data, rap_api_data=rap_api_data):
+    with mocked_responses(get_data=github_data, post_data=rap_api_data):
         run = start_run(project=project, user=user)
 
     assert run.id == rap_id
@@ -187,7 +187,7 @@ def test_update_run(project, user):
         "unrecognised_rap_ids": [],
     }
 
-    with mocked_responses(rap_api_data=rap_api_data_1):
+    with mocked_responses(post_data=rap_api_data_1):
         update_run(run=run)
 
     run.refresh_from_db()
@@ -211,7 +211,7 @@ def test_update_run(project, user):
     assert count_job.started_at is None
     assert count_job.completed_at is None
 
-    with mocked_responses(rap_api_data=rap_api_data_2):
+    with mocked_responses(post_data=rap_api_data_2):
         update_run(run=run)
 
     run.refresh_from_db()
