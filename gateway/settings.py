@@ -169,3 +169,8 @@ RAP_CONTROLLER_TOKEN = get_env_var("RAP_CONTROLLER_TOKEN")
 # access to members (under organization permissions) and read access to code and
 # metadata (under repository permissions)
 GITHUB_TOKEN = get_env_var("GITHUB_TOKEN")
+
+# The credentials for a GitHub OAuth app; the app can be created via
+# https://github.com/settings/developers
+GITHUB_OAUTH_CLIENT_ID = get_env_var("GITHUB_OAUTH_CLIENT_ID")
+GITHUB_OAUTH_CLIENT_SECRET = get_env_var("GITHUB_OAUTH_CLIENT_SECRET")

@@ -12,3 +12,7 @@ RAP_CONTROLLER_TOKEN=rap_token
 
 # The token used to query GitHub
 GITHUB_TOKEN=
+
+# The credentials for a GitHub OAuth app
+GITHUB_OAUTH_CLIENT_ID=
+GITHUB_OAUTH_CLIENT_SECRET=

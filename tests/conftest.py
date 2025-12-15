@@ -16,6 +16,6 @@ def project():
 
 @pytest.fixture
 def user():
-    return User.objects.create_user(
-        username="alice", profile=GitHubProfile(github_id=123)
-    )
+    user = User.objects.create_user(username="alice")
+    GitHubProfile.objects.create(github_id=123, user=user)
+    return user

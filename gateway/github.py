@@ -29,13 +29,32 @@ def get_latest_commit(org_name, repo_name):
     return data[0]["sha"]
 
 
-def get_json(path, params=None):
+def get_user_for_token(token):
+    return get_json("/user", token=token)
+
+
+def exchange_code_for_token(code):
+    rsp = httpx.post(
+        "https://github.com/login/oauth/access_token",
+        data={
+            "client_id": settings.GITHUB_OAUTH_CLIENT_ID,
+            "client_secret": settings.GITHUB_OAUTH_CLIENT_SECRET,
+            "code": code,
+        },
+        headers={"Accept": "application/json"},
+    )
+    rsp.raise_for_status()
+    return rsp.json()["access_token"]
+
+
+def get_json(path, params=None, token=None):
     assert path[0] == "/"
+    token = token or settings.GITHUB_TOKEN
     rsp = httpx.get(
         f"https://api.github.com{path}",
         params=params,
         headers={
-            "Authorization": f"Bearer {settings.GITHUB_TOKEN}",
+            "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.github+json",
         },
     )
