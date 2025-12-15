@@ -1,6 +1,4 @@
 import re
-from contextlib import contextmanager
-from unittest.mock import Mock, patch
 
 from django.contrib.auth.models import User
 from django.utils.dateparse import parse_datetime
@@ -16,6 +14,8 @@ from gateway.actions import (
     update_run,
 )
 from gateway.models import Job, Project, Run
+
+from .helpers import mocked_responses
 
 
 def test_create_or_update_projects():
@@ -272,20 +272,3 @@ def test_cancel_run(project, user):
 def test_generate_rap_id():
     # This is the regex used in the createRequestBody validator in job-runner.
     assert re.match("^[a-z0-9]{16}$", _generate_rap_id())
-
-
-@contextmanager
-def mocked_responses(*, github_data=None, rap_api_data=None):
-    github_httpx_rsp = Mock()
-    github_httpx_rsp.json.return_value = github_data
-    github_httpx_rsp.raise_for_status.return_value = None
-
-    rap_api_httpx_rsp = Mock()
-    rap_api_httpx_rsp.json.return_value = rap_api_data
-    rap_api_httpx_rsp.raise_for_status.return_value = None
-
-    with (
-        patch("gateway.github.httpx.get", return_value=github_httpx_rsp),
-        patch("gateway.rap_api.httpx.post", return_value=rap_api_httpx_rsp),
-    ):
-        yield
