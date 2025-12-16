@@ -33,8 +33,9 @@ jobs:
           install-uv: true
           install-just: true
           cache: uv
+      - name: Set up test environment
+        run: just devenv
       - name: Run tests
-        #env:  # Add environment variables required for tests
         run: |
           just test
 
