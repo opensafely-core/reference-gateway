@@ -21,6 +21,10 @@ The page for a project lists all the runs of that project's code:
 
 ![All runs for a project](docs/project.png)
 
+An authenticated user can trigger new runs of a project:
+
+![All runs for a project](docs/project-logged-in.png)
+
 The page for a run shows all the run's actions:
 
 ![All actions for a run](docs/run.png)
