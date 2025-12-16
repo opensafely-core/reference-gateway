@@ -9,12 +9,12 @@
 #          │                                 │
 #          │                                 │COPY FROM
 #          │     ┌──────────────────┐        │
-#          └─────► new-project-base ◄────────┘
+#          └─────►   gateway-base   ◄────────┘
 #                └────────┬─┬───────┘
 #                         │ │
 #                         │ │
 # ┌──────────────────┐    │ │     ┌──────────────────┐
-# │ new-project-prod ◄────┘ └─────► new-project-dev  │
+# │   gateway-prod   ◄────┘ └─────►   gateway-dev    │
 # └──────────────────┘            └──────────────────┘
 # The goal of this stages structure is to a) minimise the size of the *prod* image by
 # not including build dependencies and b) to make rebuilding the *dev* fast in local
@@ -115,7 +115,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 ##################################################
 #
-# Base project image (change the name from `new-project-base`!)
+# Base project image (change the name from `gateway-base`!)
 #
 # Ok, we've built everything we need, build an image with all dependencies but
 # no code.
@@ -129,7 +129,7 @@ RUN --mount=type=cache,target=/root/.cache \
 # 2) Ensures we *have* to mount the volume for dev image, as there's no embedded
 #    version of the code. Otherwise, we could end up accidentally using the
 #    version of the code included when the prod image was built.
-FROM base-python AS new-project-base
+FROM base-python AS gateway-base
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -143,16 +143,16 @@ COPY --from=builder /opt/venv /opt/venv
 
 ##################################################
 #
-# Production image (change the name from `new-project-prod`!)
+# Production image (change the name from `gateway-prod`!)
 #
 # Copy code in, add proper metadata
-FROM new-project-base AS new-project-prod
+FROM gateway-base AS gateway-prod
 
 # Adjust this metadata to fit project. Note that the base-docker image does set
 # some basic metadata.
-LABEL org.opencontainers.image.title="new-project" \
-    org.opencontainers.image.description="new-project-description" \
-    org.opencontainers.image.source="new-project-source"
+LABEL org.opencontainers.image.title="gateway" \
+    org.opencontainers.image.description="gateway-description" \
+    org.opencontainers.image.source="gateway-source"
 
 # copy application code except for things in .dockerignore
 COPY . /app
@@ -171,12 +171,12 @@ LABEL org.opencontainers.image.revision=$GITREF
 
 ##################################################
 #
-# Dev image (change the name from `new-project-dev`!)
+# Dev image (change the name from `gateway-dev`!)
 #
 # Now we build a dev image from our base project image. This is basically
 # installing dev dependencies and changing the entrypoint
 #
-FROM new-project-base AS new-project-dev
+FROM gateway-base AS gateway-dev
 
 # Pull in the binaries from our pinned uv-cli stage
 COPY --from=uv-cli /uv /uvx /bin/
