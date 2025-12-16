@@ -11,6 +11,14 @@ However, it is much simpler:
 * All users are authorized to do anything.
 * Users can only run the whole pipeline and not individual actions.
 
+## Screenshots
+
+![All projects](docs/projects.png)
+
+![All runs for a project](docs/project.png)
+
+![All actions for a run](docs/run.png)
+
 ## Developer docs
 
 Please see the [additional information](DEVELOPERS.md).
