@@ -59,7 +59,7 @@ def cancel_run(*, run):
     """
     Cancel a run.
     """
-    rap_api.cancel(rap_id=run.id, actions=run.actions)
+    rap_api.cancel(rap_id=run.id, actions=list(run.actions))
     _mark_run_cancelled(run=run)
 
 
