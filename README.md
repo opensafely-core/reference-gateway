@@ -1,29 +1,15 @@
-# reference-gateway
+# OpenSAFELY Reference Gateway
 
-This is a template for an OpenSAFELY Core repository.
+This repository contains code for (part of) a reference implementation for an OpenSAFELY Gateway component.
+It currently implements job management, but does not handle released outputs.
 
-Put your project description here.
+That is, it performs part of the role of [Job Server](https://github.com/opensafely-core/job-server/).
+However, it is much simpler:
 
-New repo checklist:
-- [ ] Does the repo require a Dockerfile?
-  If not, delete:
-  - the `docker/` directory
-  - .dockerignore
-  - hadolint pre-commit hook from `.pre-commit-config.yaml`
-  - `lint-dockerfile` action from `.github/workflows/main.yml`
-  If so:
-  - run `grep -iR new-project docker` to find places where you need to insert information about your project
-  - update the files in the `docker/` directory as needed
-- [ ] Is this a Django project?
-  If so, you probably need to add the following per-file ignores to `.flake8`
-  ```
-  per-file-ignores =
-    manage.py:INP001
-    gunicorn.conf.py:INP001
-  ```
-- [ ] Update DEVELOPERS.md with any project-specific requirements and commands
-- [ ] Update commands in `justfile`
-
+* We deal with a single backend.
+* Each project can only have a single workspace or repo.
+* All users are authorized to do anything.
+* Users can only run the whole pipeline and not individual actions.
 
 ## Developer docs
 

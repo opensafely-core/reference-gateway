@@ -82,3 +82,25 @@ Run the tests with:
 ```
 just test <args>
 ```
+
+## Running locally
+Running this locally involves interacting with (a) a GitHub organisation and (b) a local version of job-runner.
+
+We have used the [opensafely-demo](https://github.com/opensafely-core/) GitHub organisation for testing.
+The Bennett Admins can add you to this organisation.
+You can then get the necessary environment variables (`GITHUB_TOKEN`, `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET`) from BitWarden, where they are prefixed with `GATEWAY_DEMO`, and add them to your `.env` file.
+
+To run job-runner locally, check out the job-runner code and run:
+```
+GITHUB_PROXY_DOMAIN=github.com ALLOWED_GITHUB_ORGS=opensafely-demo just run
+```
+
+To get data from GitHub, run:
+```
+just manage fetch_github_data
+```
+
+You can then run a local development server with:
+```
+just run
+```
