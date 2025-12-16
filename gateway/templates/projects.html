@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="mb-5">
+    <p class="text-uppercase text-muted mb-1">Projects</p>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+      <thead class="table-light">
+        <tr>
+          <th scope="col" class="text-uppercase small text-muted">Project</th>
+          <th scope="col" class="text-uppercase small text-muted">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+          <tr>
+            <td class="fw-semibold">
+              <a class="link-underline link-underline-opacity-0" href="{% url 'project' project.name %}">
+                {{ project.name }}
+              </a>
+            </td>
+            <td>
+              {% if project.description %}
+                {{ project.description }}
+              {% else %}
+                <span class="text-muted fst-italic">No description provided.</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

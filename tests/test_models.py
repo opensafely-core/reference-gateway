@@ -1,5 +1,39 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from gateway.actions import _create_or_update_jobs, _create_run, _mark_run_cancelled
-from gateway.models import Run
+from gateway.models import Job, Run
+
+
+def test_project_has_in_progress_run(project, user):
+    assert not project.has_in_progress_run()
+    _create_run(rap_id="abcd1234efgh5678", project=project, user=user)
+    assert project.has_in_progress_run()
+
+
+def test_project_runs_ordered_by_most_recent_start(project, user):
+    now = timezone.now()
+
+    run1 = Run.objects.create(id="0000000000000001", project=project, user=user)
+    run2 = Run.objects.create(id="0000000000000002", project=project, user=user)
+    run3 = Run.objects.create(id="0000000000000003", project=project, user=user)
+
+    run1.jobs.create(
+        id="aaa",
+        action="action",
+        state=Job.State.SUCCEEDED,
+        started_at=now - timedelta(hours=2),
+    )
+    run2.jobs.create(
+        id="bbb",
+        action="action",
+        state=Job.State.RUNNING,
+        started_at=now - timedelta(hours=1),
+    )
+
+    runs = list(project.runs_ordered_by_most_recent_start())
+    assert runs == [run3, run2, run1]
 
 
 def test_run_actions(project, user):
@@ -66,6 +100,36 @@ def test_run_state_cancelled(project, user):
     _create_or_update_jobs(run=run, jobs_data=_build_job_data("running", "pending"))
     _mark_run_cancelled(run=run)
     assert run.state == Run.State.CANCELLED
+
+
+def test_run_jobs_ordered_by_earliest_start(project, user):
+    run = _create_run(rap_id="abcd1234efgh5678", project=project, user=user)
+    now = timezone.now()
+
+    job1 = run.jobs.create(
+        id="aaa",
+        action="action-1",
+        state=Job.State.RUNNING,
+        created_at=now,
+        started_at=now - timedelta(minutes=2),
+    )
+    job2 = run.jobs.create(
+        id="bbb",
+        action="action-2",
+        state=Job.State.RUNNING,
+        created_at=now,
+        started_at=now - timedelta(minutes=1),
+    )
+    job3 = run.jobs.create(
+        id="ccc",
+        action="action-3",
+        state=Job.State.PENDING,
+        created_at=now,
+        started_at=None,
+    )
+
+    jobs = list(run.jobs_ordered_by_earliest_start())
+    assert jobs == [job1, job2, job3]
 
 
 def _build_job_data(*states):

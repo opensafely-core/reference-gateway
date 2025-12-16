@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <p class="text-uppercase text-muted mb-1">Project</p>
+      <h1 class="display-6 fw-semibold mb-3">{{ project.name }}</h1>
+      {% if project.description %}
+        <p class="text-body-secondary mb-0">{{ project.description }}</p>
+      {% else %}
+        <p class="text-body-secondary fst-italic mb-0">No description provided.</p>
+      {% endif %}
+    </div>
+    <div class="text-md-end">
+      {% if can_start_run %}
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success btn-lg">Run Now</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <a class="link-offset-2 link-underline-opacity-0" href="{% url 'projects' %}">
+      &larr; Back to all projects
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h2 class="h4 mb-4">Runs</h2>
+
+      {% if runs %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th scope="col" class="text-uppercase small text-muted">Run ID</th>
+                <th scope="col" class="text-uppercase small text-muted">State</th>
+                <th scope="col" class="text-uppercase small text-muted">Started</th>
+                <th scope="col" class="text-uppercase small text-muted">Requested By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for run in runs %}
+                <tr>
+                  <td class="fw-semibold">
+                    <a class="link-underline link-underline-opacity-0" href="{% url 'run' run.id %}">
+                      {{ run.id }}
+                    </a>
+                  </td>
+                  <td>
+                    <span class="badge text-bg-secondary">
+                      {{ run.state.value|upper }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if run.run_started_at %}
+                      {{ run.run_started_at|date:"Y-m-d H:i" }}
+                    {% else %}
+                      <span class="text-muted fst-italic">Not started</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {{ run.user.username }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info mb-0" role="alert">
+          This project has no runs yet.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

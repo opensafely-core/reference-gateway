@@ -2,6 +2,7 @@ import enum
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Case, IntegerField, Min, When
 from django_enum import EnumField
 
 
@@ -19,6 +20,19 @@ class Project(models.Model):
     name = models.SlugField(unique=True)
     # 350 is the maximum length of a description in the GitHub web UI
     description = models.CharField(max_length=350, blank=True)
+
+    def has_in_progress_run(self):
+        return bool([r for r in self.runs.all() if r.in_progress])
+
+    def runs_ordered_by_most_recent_start(self):
+        return self.runs.annotate(run_started_at=Min("jobs__started_at")).order_by(
+            Case(
+                When(run_started_at__isnull=True, then=0),
+                default=1,
+                output_field=IntegerField(),
+            ),
+            "-run_started_at",
+        )
 
 
 class Run(models.Model):
@@ -60,6 +74,21 @@ class Run(models.Model):
             return Run.State.FAILED
         else:
             return Run.State.RUNNING
+
+    @property
+    def in_progress(self):
+        return self.state in [Run.State.PENDING, Run.State.RUNNING]
+
+    def jobs_ordered_by_earliest_start(self):
+        return self.jobs.order_by(
+            Case(
+                When(started_at__isnull=True, then=1),
+                default=0,
+                output_field=IntegerField(),
+            ),
+            "started_at",
+            "id",
+        )
 
 
 class Job(models.Model):

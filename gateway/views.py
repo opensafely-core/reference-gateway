@@ -4,16 +4,77 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.contrib import auth
 from django.http import HttpResponseBadRequest, HttpResponseForbidden
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from . import github
-from .models import GitHubProfile
+from .actions import cancel_run, start_run, update_run
+from .models import GitHubProfile, Project, Run
 
 
-def index(request):
-    return render(request, "index.html")
+def projects(request):
+    projects = Project.objects.order_by("name")
+
+    return render(
+        request,
+        "projects.html",
+        {"projects": projects},
+    )
+
+
+def project(request, name):
+    project = get_object_or_404(Project, name=name)
+
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden()
+        assert not project.has_in_progress_run()
+        run = start_run(project=project, user=request.user)
+        return redirect("run", run_id=run.id)
+
+    runs = (
+        project.runs_ordered_by_most_recent_start()
+        .select_related("user")
+        .prefetch_related("jobs")
+    )
+
+    return render(
+        request,
+        "project.html",
+        {
+            "project": project,
+            "runs": runs,
+            "can_start_run": request.user.is_authenticated
+            and not project.has_in_progress_run(),
+        },
+    )
+
+
+def run(request, run_id):
+    run = get_object_or_404(Run, pk=run_id)
+
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden()
+        assert run.in_progress
+        cancel_run(run=run)
+        return redirect("run", run_id=run.id)
+
+    if run.in_progress:
+        update_run(run=run)
+
+    jobs = run.jobs_ordered_by_earliest_start()
+
+    return render(
+        request,
+        "run.html",
+        {
+            "run": run,
+            "jobs": jobs,
+            "can_cancel": request.user.is_authenticated and run.in_progress,
+        },
+    )
 
 
 def login(request):

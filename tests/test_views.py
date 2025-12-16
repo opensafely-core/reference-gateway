@@ -3,9 +3,120 @@ from urllib.parse import parse_qs, urlparse
 from .helpers import mocked_responses
 
 
-def test_index(client):
+def test_get_projects(client, project):
     rsp = client.get("/")
     assert rsp.status_code == 200
+    assert project.name in rsp.content.decode()
+
+
+def test_get_project_with_no_current_run_not_logged_in(
+    client, project_with_no_current_run
+):
+    rsp = client.get(f"/projects/{project_with_no_current_run.name}/")
+    assert rsp.status_code == 200
+    assert "Run Now" not in rsp.content.decode()
+
+
+def test_get_project_with_no_current_run_logged_in(
+    client, project_with_no_current_run, user
+):
+    client.force_login(user)
+    rsp = client.get(f"/projects/{project_with_no_current_run.name}/")
+    assert rsp.status_code == 200
+    assert "Run Now" in rsp.content.decode()
+
+
+def test_get_project_with_current_run_not_logged_in(client, project_with_current_run):
+    rsp = client.get(f"/projects/{project_with_current_run.name}/")
+    assert rsp.status_code == 200
+    assert "Run Now" not in rsp.content.decode()
+
+
+def test_get_project_with_current_run_logged_in(client, project_with_current_run, user):
+    client.force_login(user)
+    rsp = client.get(f"/projects/{project_with_current_run.name}/")
+    assert rsp.status_code == 200
+    assert "Run Now" not in rsp.content.decode()
+
+
+def test_post_project_not_logged_in(client, project_with_no_current_run):
+    with mocked_responses():
+        rsp = client.post(f"/projects/{project_with_no_current_run.name}/")
+    assert rsp.status_code == 403
+
+
+def test_post_project_logged_in(monkeypatch, client, project_with_no_current_run, user):
+    rap_id = "abcd1234efgh5678"
+    commit_sha = "commit-sha"
+    github_data = [
+        {
+            "sha": commit_sha,
+            "commit": {"message": "Example commit"},
+        }
+    ]
+    rap_api_data = {
+        "result": "Success",
+        "details": f"Jobs created for rap_id '{rap_id}'",
+        "rap_id": rap_id,
+        "count": 2,
+    }
+
+    monkeypatch.setattr("gateway.actions._generate_rap_id", lambda: rap_id)
+
+    client.force_login(user)
+
+    with mocked_responses(
+        get_data=github_data,
+        post_data=rap_api_data,
+    ):
+        rsp = client.post(f"/projects/{project_with_no_current_run.name}/")
+
+    assert rsp.status_code == 302
+    assert rsp["Location"] == "/runs/abcd1234efgh5678/"
+
+
+def test_get_current_run_not_logged_in(client, current_run):
+    with mocked_responses(post_data={"jobs": []}):
+        rsp = client.get(f"/runs/{current_run.id}/")
+    assert rsp.status_code == 200
+    assert "Cancel run" not in rsp.content.decode()
+
+
+def test_get_current_run_logged_in(client, current_run, user):
+    client.force_login(user)
+    with mocked_responses(post_data={"jobs": []}):
+        rsp = client.get(f"/runs/{current_run.id}/")
+    assert rsp.status_code == 200
+    assert "Cancel run" in rsp.content.decode()
+
+
+def test_get_successful_run_not_logged_in(client, successful_run):
+    with mocked_responses():
+        rsp = client.get(f"/runs/{successful_run.id}/")
+    assert rsp.status_code == 200
+    assert "Cancel run" not in rsp.content.decode()
+
+
+def test_get_successful_run_logged_in(client, successful_run, user):
+    client.force_login(user)
+    with mocked_responses():
+        rsp = client.get(f"/runs/{successful_run.id}/")
+    assert rsp.status_code == 200
+    assert "Cancel run" not in rsp.content.decode()
+
+
+def test_post_current_run_not_logged_in(client, current_run):
+    with mocked_responses():
+        rsp = client.post(f"/runs/{current_run.id}/")
+    assert rsp.status_code == 403
+
+
+def test_post_current_run_logged_in(client, current_run, user):
+    client.force_login(user)
+    with mocked_responses():
+        rsp = client.post(f"/runs/{current_run.id}/")
+    assert rsp.status_code == 302
+    assert rsp["Location"] == f"/runs/{current_run.id}/"
 
 
 def test_login(client, settings):

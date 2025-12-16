@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="mb-4">
+    <p class="text-uppercase text-muted mb-1">Run</p>
+    <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+      <h1 class="display-6 fw-semibold mb-0">{{ run.id }}</h1>
+      <div class="d-flex flex-wrap gap-3 align-items-center">
+        <span class="badge text-bg-secondary">{{ run.state.value|upper }}</span>
+        <span class="text-muted">Requested by {{ run.user.username }}</span>
+      </div>
+      {% if can_cancel %}
+        <form method="post" class="ms-md-auto">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger">Cancel run</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <a class="link-offset-2 link-underline-opacity-0" href="{% url 'project' run.project.name %}">
+      &larr; Back to {{ run.project.name }}
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h2 class="h4 mb-4">Jobs</h2>
+
+      {% if jobs %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th scope="col" class="text-uppercase small text-muted">Job</th>
+                <th scope="col" class="text-uppercase small text-muted">Action</th>
+                <th scope="col" class="text-uppercase small text-muted">State</th>
+                <th scope="col" class="text-uppercase small text-muted">Started</th>
+                <th scope="col" class="text-uppercase small text-muted">Finished</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for job in jobs %}
+                <tr>
+                  <td class="fw-semibold">{{ job.id }}</td>
+                  <td>{{ job.action }}</td>
+                  <td>
+                    <span class="badge text-bg-secondary">{{ job.state.value|upper }}</span>
+                  </td>
+                  <td>
+                    {% if job.started_at %}
+                      {{ job.started_at|date:"Y-m-d H:i" }}
+                    {% else %}
+                      <span class="text-muted">–</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if job.completed_at %}
+                      {{ job.completed_at|date:"Y-m-d H:i" }}
+                    {% else %}
+                      <span class="text-muted">–</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info mb-0" role="alert">
+          This run has just started.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
