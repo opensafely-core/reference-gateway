@@ -13,9 +13,15 @@ However, it is much simpler:
 
 ## Screenshots
 
+The index page lists all projects:
+
 ![All projects](docs/projects.png)
 
+The page for a project lists all the runs of that project's code:
+
 ![All runs for a project](docs/project.png)
+
+The page for a run shows all the run's actions:
 
 ![All actions for a run](docs/run.png)
 
