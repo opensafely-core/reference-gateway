@@ -25,7 +25,7 @@ def get_latest_commit(org_name, repo_name):
     """
     Return the SHA of the latest commit on the main branch of the given repo.
     """
-    data = get_json(f"/{org_name}/{repo_name}/commits", {"sha": "main"})
+    data = get_json(f"/repos/{org_name}/{repo_name}/commits", {"sha": "main"})
     return data[0]["sha"]
 
 
