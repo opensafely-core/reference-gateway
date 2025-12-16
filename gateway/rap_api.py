@@ -5,15 +5,15 @@ from django.conf import settings
 TIMEOUT = 10
 
 
-def create(*, rap_id, project, commit, username):
+def create(*, rap_id, project_name, commit, username):
     payload = {
         "rap_id": rap_id,
         "backend": settings.OPENSAFELY_BACKEND,
-        "project": project,
+        "project": project_name,
         # In the original OpenSAFELY implementation, a project has many workspaces.
         # This implementation does not use workspaces, so we reuse the project name.
-        "workspace": project,
-        "repo_url": f"https://github.com/{settings.GITHUB_ORG}/{project}",
+        "workspace": project_name,
+        "repo_url": f"https://github.com/{settings.GITHUB_ORG}/{project_name}",
         "branch": "main",
         "commit": commit,
         "created_by": username,

@@ -42,7 +42,7 @@ def start_run(*, project, user):
     rap_id = _generate_rap_id()
     commit = github.get_latest_commit(settings.GITHUB_ORG, project.name)
     rap_api.create(
-        rap_id=rap_id, project=project, commit=commit, username=user.username
+        rap_id=rap_id, project_name=project.name, commit=commit, username=user.username
     )
     return _create_run(rap_id=rap_id, project=project, user=user)
 
