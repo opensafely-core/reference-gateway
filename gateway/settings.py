@@ -42,6 +42,8 @@ def get_env_var(name):
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Runtime data lives under WORKDIR when set, otherwise inside the repo.
+WORKDIR = Path(os.environ.get("WORKDIR", BASE_DIR))
 
 
 # Quick-start development settings - unsuitable for production
@@ -53,7 +55,7 @@ SECRET_KEY = "django-insecure--#rqs_khrc1=a-=+z80szu$c&*kvk33pc)=fk2_l33q$w*^=2h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 
 # Application definition
@@ -104,7 +106,7 @@ WSGI_APPLICATION = "gateway.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": WORKDIR / "db.sqlite3",
     }
 }
 
