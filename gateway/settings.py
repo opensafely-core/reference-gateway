@@ -61,6 +61,8 @@ ALLOWED_HOSTS = [
 ]
 print("ALLOWED_HOSTS from env:", os.environ.get("ALLOWED_HOSTS"))
 print("Parsed ALLOWED_HOSTS:", ALLOWED_HOSTS)
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
