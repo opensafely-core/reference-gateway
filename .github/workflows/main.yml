@@ -5,7 +5,9 @@ permissions:
 
 on:
   push:
-
+    branches: main
+  pull_request:
+  workflow_dispatch:
 
 # Note: we prefer to pin ubuntu versions explicitly rather than use
 # ubuntu:latest, as that changes underneath us.
@@ -48,7 +50,52 @@ jobs:
           install-uv: true
           install-just: true
           cache: uv
+      - name: Build and test production image
+        run: |
+          just docker/build prod
+      - name: Smoke test production image
+        run: |
+          SKIP_BUILD=1 just docker/smoke-test
       - name: Run docker tests
-        #env:  # Add environment variables required for tests
         run: |
           just docker/test
+      - name: Dump prod logs on failure
+        if: failure()
+        run: |
+          docker compose -f docker/docker-compose.yml logs prod
+      - name: Export production image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker save reference-gateway --output "${{ runner.temp }}/gateway-image.tar"
+      - name: Upload production image artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-image-${{ github.sha }}
+          path: ${{ runner.temp }}/gateway-image.tar
+
+  publish-image:
+    runs-on: ubuntu-24.04
+    needs:
+      - check
+      - test
+      - test-docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    steps:
+      - name: Download production image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gateway-image-${{ github.sha }}
+          path: ${{ runner.temp }}
+      - name: Log in to GitHub Container Registry
+        run: |
+          printf '%s' "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Publish tested image
+        run: |
+          docker load --input "${{ runner.temp }}/gateway-image.tar"
+          docker tag reference-gateway ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:latest
