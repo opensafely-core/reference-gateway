@@ -25,6 +25,8 @@ filelock==3.25.1
     # via
     #   python-discovery
     #   virtualenv
+gunicorn==25.1.0
+    # via reference-gateway
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
@@ -42,7 +44,9 @@ iniconfig==2.3.0
 nodeenv==1.10.0
     # via pre-commit
 packaging==26.0
-    # via pytest
+    # via
+    #   gunicorn
+    #   pytest
 platformdirs==4.9.4
     # via
     #   python-discovery
@@ -55,7 +59,7 @@ pygments==2.19.2
 pytest==9.0.2
     # via pytest-django
 pytest-django==4.12.0
-python-discovery==1.1.2
+python-discovery==1.1.3
     # via virtualenv
 pyyaml==6.0.3
     # via pre-commit
