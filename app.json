@@ -1,0 +1,27 @@
+{
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "cron": [
+    {
+      "command": "python manage.py fetch_github_data",
+      "schedule": "*/5 * * * *"
+    }
+  ],
+  "healthchecks": {
+    "web": [
+      {
+        "name": "Web health check",
+        "type": "startup",
+        "description": "Check if the app responds to / url",
+        "path": "/",
+        "port": 8000,
+        "attempts": 3,
+        "initialDelay": 10,
+        "timeout": 10
+      }
+    ]
+  }
+}
