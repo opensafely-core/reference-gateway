@@ -21,18 +21,19 @@ services:
     # use dockers builitin PID daemon
     init: true
     # uncomment if port forwarding is needed
-    # ports:
-    #   - "8000:8000"
+    ports:
+      - "8000:8000"
 
   # prod service. Used to build prod image and run/test it locally
   prod:
     # image name, both locally and public
-    image: gateway
+    image: reference-gateway
     extends:
       service: base
     # this compose file is only used for production-like testing - so we
     # don't worry about potentially leaking dummy env vars into actual prod
     env_file: ../.env
+    command: gunicorn -c gunicorn.conf.py gateway.wsgi
 
   # base development service
   # broken out so we can have a common base for dev and test since depends_on
@@ -40,7 +41,7 @@ services:
   dev-base:
     extends:
       service: base
-    image: gateway-dev
+    image: reference-gateway-dev
     build:
       # the dev stage in the Dockerfile
       target: gateway-dev
