@@ -45,18 +45,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Runtime data lives under WORKDIR when set, otherwise inside the repo.
 WORKDIR = Path(os.environ.get("WORKDIR", BASE_DIR))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure--#rqs_khrc1=a-=+z80szu$c&*kvk33pc)=fk2_l33q$w*^=2h"
+SECRET_KEY = get_env_var("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = get_env_var("DJANGO_DEBUG") == "True"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
-
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "*").split(",")
+    if host.strip()
+]
+print("ALLOWED_HOSTS from env:", os.environ.get("ALLOWED_HOSTS"))
+print("Parsed ALLOWED_HOSTS:", ALLOWED_HOSTS)
 
 # Application definition
 
