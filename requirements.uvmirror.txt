@@ -21,7 +21,7 @@ django==6.0.3
     #   reference-gateway
 django-enum==2.4.2
     # via reference-gateway
-filelock==3.25.1
+filelock==3.25.2
     # via
     #   python-discovery
     #   virtualenv
