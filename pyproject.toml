@@ -9,6 +9,7 @@ dependencies = [
     "django-enum>=2.3.0",
     "gunicorn>=25.1.0",
     "httpx>=0.28.1",
+    "xkcdpass>=1.30.0",
 ]
 
 [tool.coverage.run]

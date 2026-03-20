@@ -10,6 +10,8 @@ from django_enum import EnumField
 class User(AbstractUser):
     github_id = models.BigIntegerField(unique=True, null=True, blank=True)
     full_name = models.TextField(blank=True)
+    login_token = models.CharField(max_length=128, blank=True)
+    login_token_expires_at = models.DateTimeField(null=True, blank=True)
 
     def get_full_name(self):
         return self.full_name or super().get_full_name()

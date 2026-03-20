@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from .login_tokens import TokenLoginException, validate_login_token
 from .models import Project, User
 
 
@@ -53,7 +54,7 @@ def _build_level4_user(user):
 @csrf_exempt
 @require_POST
 def authenticate(request):
-    """Validate user by username only; accept any token."""
+    """Validate user by username with a single-use login token."""
     try:
         _authenticate_backend(request)
     except BackendAuthenticationError as exc:
@@ -65,9 +66,9 @@ def authenticate(request):
     if not user_field or "token" not in data:
         return JsonResponse({"error": "Missing required fields"}, status=400)
     try:
-        user = User.objects.get(username=user_field)
-    except User.DoesNotExist:
-        return JsonResponse({"error": "User not found"}, status=404)
+        user = validate_login_token(data["user"], data["token"])
+    except (User.DoesNotExist, TokenLoginException) as exc:
+        return JsonResponse({"detail": str(exc)}, status=401)
     return JsonResponse(_build_level4_user(user))
 
 
