@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -8,12 +9,26 @@ from django.views.decorators.http import require_POST
 from .models import Project
 
 
+class BackendAuthenticationError(Exception):
+    pass
+
+
 def _parse_json_body(request):
     """Returns (data, error_response). On failure, data is None."""
     try:
         return json.loads(request.body), None
     except (json.JSONDecodeError, ValueError):
         return None, JsonResponse({"error": "Invalid JSON"}, status=400)
+
+
+def _authenticate_backend(request):
+    token = request.headers.get("Authorization")
+    if token is None:
+        raise BackendAuthenticationError("Authorization header is missing")
+    if token == "":
+        raise BackendAuthenticationError("Authorization header is empty")
+    if token != settings.AIRLOCK_TOKEN:
+        raise BackendAuthenticationError("Invalid token")
 
 
 def _build_level4_user(user):
@@ -40,6 +55,10 @@ def _build_level4_user(user):
 @require_POST
 def authenticate(request):
     """Validate user by username or email; accept any token."""
+    try:
+        _authenticate_backend(request)
+    except BackendAuthenticationError as exc:
+        return JsonResponse({"detail": str(exc)}, status=401)
     data, err = _parse_json_body(request)
     if err:
         return err
@@ -60,6 +79,10 @@ def authenticate(request):
 @require_POST
 def authorise(request):
     """Validate user by username only; skip Level 4 access checks."""
+    try:
+        _authenticate_backend(request)
+    except BackendAuthenticationError as exc:
+        return JsonResponse({"detail": str(exc)}, status=401)
     data, err = _parse_json_body(request)
     if err:
         return err
