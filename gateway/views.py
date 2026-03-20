@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 
 from . import github
 from .actions import cancel_run, start_run, update_run
-from .models import GitHubProfile, Project, Run
+from .models import Project, Run, User
 
 
 def projects(request):
@@ -102,14 +102,19 @@ def login_callback(request):
     user_data = github.get_user_for_token(token)
 
     try:
-        profile = GitHubProfile.objects.get(github_id=user_data["id"])
-    except GitHubProfile.DoesNotExist:
+        user = User.objects.get(github_id=user_data["id"])
+    except User.DoesNotExist:
         return HttpResponseForbidden("Access denied.")
 
-    if not profile.user.is_active:
+    if not user.is_active:
         return HttpResponseForbidden("Access denied.")
 
-    auth.login(request, profile.user)
+    user.username = user_data["login"]
+    if user_data.get("name"):
+        user.full_name = user_data["name"]
+    user.save()
+
+    auth.login(request, user)
     return redirect("/")
 
 

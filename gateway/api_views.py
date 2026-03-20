@@ -1,12 +1,11 @@
 import json
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import Project
+from .models import Project, User
 
 
 class BackendAuthenticationError(Exception):

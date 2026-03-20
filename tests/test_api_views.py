@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import Client
 
 from gateway.models import Project
@@ -52,6 +52,7 @@ def test_authenticate_returns_200_by_username(client, settings, user, project):
 
 
 def test_authenticate_returns_200_by_email(client, settings, project):
+    User = get_user_model()
     bob = User.objects.create_user(username="bob", email="bob@example.com")
     response = _post_json(
         client,
@@ -132,6 +133,7 @@ def test_authenticate_workspaces_contain_all_projects(client, settings, user):
 
 
 def test_authenticate_fullname_falls_back_to_username(client, settings):
+    User = get_user_model()
     noname = User.objects.create_user(username="noname")
     response = _post_json(
         client,
@@ -144,9 +146,10 @@ def test_authenticate_fullname_falls_back_to_username(client, settings):
 
 
 def test_authenticate_fullname_uses_full_name_when_set(client, settings):
-    fulluser = User.objects.create_user(
-        username="fulluser", first_name="Full", last_name="User"
-    )
+    User = get_user_model()
+    fulluser = User.objects.create_user(username="fulluser")
+    fulluser.full_name = "Full User"
+    fulluser.save(update_fields=["full_name"])
     response = _post_json(
         client,
         "/api/v2/releases/authenticate",
@@ -217,6 +220,7 @@ def test_authorise_backend_authentication_errors(
 
 
 def test_authorise_does_not_look_up_by_email(client, settings):
+    User = get_user_model()
     User.objects.create_user(username="carol", email="carol@example.com")
     response = _post_json(
         client,

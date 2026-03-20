@@ -1,8 +1,8 @@
 import pytest
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from gateway.actions import _create_or_update_jobs, _create_run
-from gateway.models import GitHubProfile, Project
+from gateway.models import Project
 
 
 @pytest.fixture(autouse=True)
@@ -12,9 +12,8 @@ def enable_db_for_all_tests(db):
 
 @pytest.fixture
 def user():
-    user = User.objects.create_user(username="alice")
-    GitHubProfile.objects.create(github_id=123, user=user)
-    return user
+    User = get_user_model()
+    return User.objects.create_user(username="alice", github_id=123)
 
 
 @pytest.fixture

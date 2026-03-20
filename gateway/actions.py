@@ -2,10 +2,9 @@ import base64
 import secrets
 
 from django.conf import settings
-from django.contrib.auth.models import User
 
 from . import github, rap_api
-from .models import GitHubProfile, Job, Project, Run
+from .models import Job, Project, Run, User
 
 
 def create_or_update_projects():
@@ -21,17 +20,18 @@ def create_or_update_projects():
 
 def create_or_update_users():
     User.objects.update(is_active=False)
+    # The scheduled org sync currently only refreshes GitHub id and username.
+    # Richer profile metadata such as full_name is updated on interactive login.
     for record in github.get_user_metadata(settings.GITHUB_ORG):
         github_id = record["id"]
-        if GitHubProfile.objects.filter(github_id=github_id).exists():
-            user = User.objects.get(profile__github_id=github_id)
+        if User.objects.filter(github_id=github_id).exists():
+            user = User.objects.get(github_id=github_id)
             user.is_active = True
             user.username = record["login"]
             user.save()
         else:
-            GitHubProfile.objects.create(
-                github_id=github_id,
-                user=User.objects.create_user(username=record["login"]),
+            User.objects.create_user(
+                username=record["login"], github_id=github_id, is_active=True
             )
 
 

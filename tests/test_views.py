@@ -143,7 +143,11 @@ def test_login_callback_logs_user_in(client, settings, user):
 
     with mocked_responses(
         post_data={"access_token": "token"},
-        get_data={"id": user.profile.github_id},
+        get_data={
+            "id": user.github_id,
+            "login": "alice-updated",
+            "name": "Alice Example",
+        },
     ):
         rsp = client.get(
             "/auth/login/callback/",
@@ -153,6 +157,9 @@ def test_login_callback_logs_user_in(client, settings, user):
     assert rsp.status_code == 302
     assert rsp["Location"] == "/"
     assert client.session["_auth_user_id"] == str(user.id)
+    user.refresh_from_db()
+    assert user.username == "alice-updated"
+    assert user.full_name == "Alice Example"
 
 
 def test_login_callback_rejects_unknown_user(client, settings, user):
@@ -187,7 +194,7 @@ def test_login_callback_rejects_inactive_user(client, settings, user):
 
     with mocked_responses(
         post_data={"access_token": "token"},
-        get_data={"id": user.profile.github_id},
+        get_data={"id": user.github_id, "login": user.username},
     ):
         rsp = client.get(
             "/auth/login/callback/",
@@ -213,6 +220,37 @@ def test_login_callback_rejects_bad_request(client, settings):
     ]:
         rsp = client.get("/auth/login/callback/", data)
         assert rsp.status_code == 400
+
+
+def test_login_callback_keeps_existing_name_when_github_omits_it(
+    client, settings, user
+):
+    user.full_name = "Existing Name"
+    user.save(update_fields=["full_name"])
+
+    settings.GITHUB_OAUTH_CLIENT_ID = "client-id"
+    settings.GITHUB_OAUTH_CLIENT_SECRET = "client-secret"
+    session = client.session
+    session["github_oauth_state"] = "expected-state"
+    session.save()
+
+    with mocked_responses(
+        post_data={"access_token": "token"},
+        get_data={
+            "id": user.github_id,
+            "login": "alice-renamed",
+            "name": "",
+        },
+    ):
+        rsp = client.get(
+            "/auth/login/callback/",
+            {"code": "abcd", "state": "expected-state"},
+        )
+
+    assert rsp.status_code == 302
+    user.refresh_from_db()
+    assert user.username == "alice-renamed"
+    assert user.full_name == "Existing Name"
 
 
 def test_logout_logs_user_out(client, user):
