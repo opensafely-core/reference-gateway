@@ -59,8 +59,6 @@ ALLOWED_HOSTS = [
     for host in os.environ.get("ALLOWED_HOSTS", "*").split(",")
     if host.strip()
 ]
-print("ALLOWED_HOSTS from env:", os.environ.get("ALLOWED_HOSTS"))
-print("Parsed ALLOWED_HOSTS:", ALLOWED_HOSTS)
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 

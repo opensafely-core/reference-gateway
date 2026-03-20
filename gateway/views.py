@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import auth
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -10,6 +11,7 @@ from django.views.decorators.http import require_POST
 
 from . import github
 from .actions import cancel_run, start_run, update_run
+from .login_tokens import generate_login_token
 from .models import Project, Run, User
 
 
@@ -116,6 +118,21 @@ def login_callback(request):
 
     auth.login(request, user)
     return redirect("/")
+
+
+@login_required
+def airlock_token(request):
+    context = {}
+
+    if request.method == "POST":
+        token = generate_login_token(user=request.user)
+        request.user.refresh_from_db(fields=["login_token_expires_at"])
+        context = {
+            "token": token,
+            "expires_at": request.user.login_token_expires_at,
+        }
+
+    return render(request, "airlock_token.html", context)
 
 
 @require_POST

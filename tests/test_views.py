@@ -1,5 +1,7 @@
 from urllib.parse import parse_qs, urlparse
 
+from django.contrib.auth.hashers import check_password
+
 from .helpers import mocked_responses
 
 
@@ -274,6 +276,42 @@ def test_login_callback_keeps_existing_name_when_github_omits_it(
     user.refresh_from_db()
     assert user.username == "alice-renamed"
     assert user.full_name == "Existing Name"
+
+
+def test_airlock_token_requires_login(client):
+    rsp = client.get("/auth/airlock-token/")
+    assert rsp.status_code == 302
+    assert rsp["Location"].startswith("/accounts/login/")
+
+
+def test_airlock_token_page_is_linked_for_logged_in_user(client, user):
+    client.force_login(user)
+    rsp = client.get("/")
+    assert rsp.status_code == 200
+    assert 'href="/auth/airlock-token/"' in rsp.content.decode()
+
+
+def test_airlock_token_get_renders_page_for_logged_in_user(client, user):
+    client.force_login(user)
+    rsp = client.get("/auth/airlock-token/")
+
+    assert rsp.status_code == 200
+    assert "Single-use login token" in rsp.content.decode()
+
+
+def test_airlock_token_generates_token(client, user):
+    client.force_login(user)
+    rsp = client.post("/auth/airlock-token/")
+
+    assert rsp.status_code == 200
+    user.refresh_from_db()
+    body = rsp.content.decode()
+    assert "Single-use login token" in body
+    assert user.login_token
+    assert user.login_token_expires_at is not None
+    assert check_password(
+        "".join(body.split("<code>")[1].split("</code>")[0].split()), user.login_token
+    )
 
 
 def test_logout_logs_user_out(client, user):
