@@ -20,7 +20,7 @@
         <div class="d-flex align-items-center gap-3 ms-auto">
           {% if request.user.is_authenticated %}
             <p class="text-muted small mb-0">
-              Signed in as <strong>{{ request.user.username }}</strong>
+              Signed in as <strong>{{ request.user.display_name }}</strong>
             </p>
             <form method="post" action="{% url 'logout' %}">
               {% csrf_token %}

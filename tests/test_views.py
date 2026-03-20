@@ -20,10 +20,14 @@ def test_get_project_with_no_current_run_not_logged_in(
 def test_get_project_with_no_current_run_logged_in(
     client, project_with_no_current_run, user
 ):
+    user.full_name = "Alice Example"
+    user.save(update_fields=["full_name"])
     client.force_login(user)
     rsp = client.get(f"/projects/{project_with_no_current_run.name}/")
     assert rsp.status_code == 200
-    assert "Run Now" in rsp.content.decode()
+    body = rsp.content.decode()
+    assert "Run Now" in body
+    assert "Signed in as <strong>Alice Example</strong>" in body
 
 
 def test_get_project_with_current_run_not_logged_in(client, project_with_current_run):
@@ -33,10 +37,14 @@ def test_get_project_with_current_run_not_logged_in(client, project_with_current
 
 
 def test_get_project_with_current_run_logged_in(client, project_with_current_run, user):
+    user.full_name = "Alice Example"
+    user.save(update_fields=["full_name"])
     client.force_login(user)
     rsp = client.get(f"/projects/{project_with_current_run.name}/")
     assert rsp.status_code == 200
-    assert "Run Now" not in rsp.content.decode()
+    body = rsp.content.decode()
+    assert "Run Now" not in body
+    assert "Alice Example" in body
 
 
 def test_post_project_not_logged_in(client, project_with_no_current_run):
@@ -83,11 +91,15 @@ def test_get_current_run_not_logged_in(client, current_run):
 
 
 def test_get_current_run_logged_in(client, current_run, user):
+    user.full_name = "Alice Example"
+    user.save(update_fields=["full_name"])
     client.force_login(user)
     with mocked_responses(post_data={"jobs": []}):
         rsp = client.get(f"/runs/{current_run.id}/")
     assert rsp.status_code == 200
-    assert "Cancel run" in rsp.content.decode()
+    body = rsp.content.decode()
+    assert "Cancel run" in body
+    assert "Requested by Alice Example" in body
 
 
 def test_get_successful_run_not_logged_in(client, successful_run):
@@ -103,6 +115,17 @@ def test_get_successful_run_logged_in(client, successful_run, user):
         rsp = client.get(f"/runs/{successful_run.id}/")
     assert rsp.status_code == 200
     assert "Cancel run" not in rsp.content.decode()
+
+
+def test_ui_display_name_falls_back_to_username_when_full_name_missing(
+    client, current_run, user
+):
+    client.force_login(user)
+    with mocked_responses(post_data={"jobs": []}):
+        rsp = client.get(f"/runs/{current_run.id}/")
+
+    assert rsp.status_code == 200
+    assert "Requested by alice" in rsp.content.decode()
 
 
 def test_post_current_run_not_logged_in(client, current_run):

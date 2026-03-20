@@ -6,6 +6,16 @@ from gateway.actions import _create_or_update_jobs, _create_run, _mark_run_cance
 from gateway.models import Job, Run
 
 
+def test_user_display_name_uses_full_name(user):
+    user.full_name = "Alice Example"
+
+    assert user.display_name == "Alice Example"
+
+
+def test_user_display_name_falls_back_to_username(user):
+    assert user.display_name == "alice"
+
+
 def test_project_has_in_progress_run(project, user):
     assert not project.has_in_progress_run()
     _create_run(rap_id="abcd1234efgh5678", project=project, user=user)

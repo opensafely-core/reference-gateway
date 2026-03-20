@@ -7,7 +7,7 @@
       <h1 class="display-6 fw-semibold mb-0">{{ run.id }}</h1>
       <div class="d-flex flex-wrap gap-3 align-items-center">
         <span class="badge text-bg-secondary">{{ run.state.value|upper }}</span>
-        <span class="text-muted">Requested by {{ run.user.username }}</span>
+        <span class="text-muted">Requested by {{ run.user.display_name }}</span>
       </div>
       {% if can_cancel %}
         <form method="post" class="ms-md-auto">

@@ -14,6 +14,10 @@ class User(AbstractUser):
     def get_full_name(self):
         return self.full_name or super().get_full_name()
 
+    @property
+    def display_name(self):
+        return self.get_full_name() or self.username
+
 
 class Project(models.Model):
     id = models.IntegerField(primary_key=True)
