@@ -51,19 +51,6 @@ def test_authenticate_returns_200_by_username(client, settings, user, project):
     _assert_valid_level4_response(response.json(), user, [project])
 
 
-def test_authenticate_returns_200_by_email(client, settings, project):
-    User = get_user_model()
-    bob = User.objects.create_user(username="bob", email="bob@example.com")
-    response = _post_json(
-        client,
-        "/api/v2/releases/authenticate",
-        {"user": "bob@example.com", "token": "x"},
-        token=settings.AIRLOCK_TOKEN,
-    )
-    assert response.status_code == 200
-    _assert_valid_level4_response(response.json(), bob, [project])
-
-
 @pytest.mark.parametrize(
     "method,body,expected_status",
     [

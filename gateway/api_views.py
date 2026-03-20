@@ -53,7 +53,7 @@ def _build_level4_user(user):
 @csrf_exempt
 @require_POST
 def authenticate(request):
-    """Validate user by username or email; accept any token."""
+    """Validate user by username only; accept any token."""
     try:
         _authenticate_backend(request)
     except BackendAuthenticationError as exc:
@@ -67,10 +67,7 @@ def authenticate(request):
     try:
         user = User.objects.get(username=user_field)
     except User.DoesNotExist:
-        try:
-            user = User.objects.get(email=user_field)
-        except User.DoesNotExist:
-            return JsonResponse({"error": "User not found"}, status=404)
+        return JsonResponse({"error": "User not found"}, status=404)
     return JsonResponse(_build_level4_user(user))
 
 
