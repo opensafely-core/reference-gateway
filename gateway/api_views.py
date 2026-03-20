@@ -1,12 +1,11 @@
 import json
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import Project
+from .models import Project, User
 
 
 class BackendAuthenticationError(Exception):
@@ -54,7 +53,7 @@ def _build_level4_user(user):
 @csrf_exempt
 @require_POST
 def authenticate(request):
-    """Validate user by username or email; accept any token."""
+    """Validate user by username only; accept any token."""
     try:
         _authenticate_backend(request)
     except BackendAuthenticationError as exc:
@@ -68,10 +67,7 @@ def authenticate(request):
     try:
         user = User.objects.get(username=user_field)
     except User.DoesNotExist:
-        try:
-            user = User.objects.get(email=user_field)
-        except User.DoesNotExist:
-            return JsonResponse({"error": "User not found"}, status=404)
+        return JsonResponse({"error": "User not found"}, status=404)
     return JsonResponse(_build_level4_user(user))
 
 

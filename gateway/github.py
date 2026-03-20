@@ -8,6 +8,10 @@ TIMEOUT = 10
 def get_user_metadata(org_name):
     """
     Return a list of metadata about users belonging to the given GitHub org.
+
+    This currently uses the org members endpoint, which gives us enough data for
+    identity and membership sync but not richer profile metadata such as full
+    name.
     """
     data = get_json(f"/orgs/{org_name}/members")
     return [pluck(user, ["id", "login"]) for user in data]

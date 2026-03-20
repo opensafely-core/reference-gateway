@@ -1,6 +1,6 @@
 import re
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.dateparse import parse_datetime
 
 from gateway.actions import (
@@ -60,6 +60,7 @@ def test_create_or_update_projects():
 
 
 def test_create_or_update_users():
+    User = get_user_model()
     github_data_1 = [
         {"id": 123, "login": "test-1"},
         {"id": 456, "login": "test-2"},
@@ -74,11 +75,11 @@ def test_create_or_update_users():
 
     assert User.objects.count() == 2
 
-    u1 = User.objects.get(profile__github_id=123)
+    u1 = User.objects.get(github_id=123)
     assert u1.username == "test-1"
     assert u1.is_active
 
-    u2 = User.objects.get(profile__github_id=456)
+    u2 = User.objects.get(github_id=456)
     assert u2.username == "test-2"
     assert u2.is_active
 
@@ -87,15 +88,15 @@ def test_create_or_update_users():
 
     assert User.objects.count() == 3
 
-    u1 = User.objects.get(profile__github_id=123)
+    u1 = User.objects.get(github_id=123)
     assert u1.username == "updated-test-1"
     assert u1.is_active
 
-    u2 = User.objects.get(profile__github_id=456)
+    u2 = User.objects.get(github_id=456)
     assert u2.username == "test-2"
     assert not u2.is_active
 
-    u3 = User.objects.get(profile__github_id=789)
+    u3 = User.objects.get(github_id=789)
     assert u3.username == "test-3"
     assert u3.is_active
 

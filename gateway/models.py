@@ -1,18 +1,22 @@
 import enum
 
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import Case, IntegerField, Min, When
 from django_enum import EnumField
 
 
-class GitHubProfile(models.Model):
-    github_id = models.IntegerField(primary_key=True)
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="profile",
-    )
+class User(AbstractUser):
+    github_id = models.BigIntegerField(unique=True, null=True, blank=True)
+    full_name = models.TextField(blank=True)
+
+    def get_full_name(self):
+        return self.full_name or super().get_full_name()
+
+    @property
+    def display_name(self):
+        return self.get_full_name() or self.username
 
 
 class Project(models.Model):
