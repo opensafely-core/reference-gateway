@@ -59,6 +59,27 @@ def test_create_or_update_projects():
     assert p3.description == "Description"
 
 
+def test_create_or_update_projects_ignores_invalid_slug_repos(caplog):
+    github_data = [
+        {"id": 123, "name": ".github", "description": "Ignored"},
+        {"id": 124, "name": "my.repo", "description": "Ignored"},
+        {"id": 456, "name": "test-2", "description": "Description"},
+    ]
+
+    with mocked_responses(get_data=github_data):
+        create_or_update_projects()
+
+    assert Project.objects.count() == 1
+    assert not Project.objects.filter(name=".github").exists()
+    assert not Project.objects.filter(name="my.repo").exists()
+    assert "Ignoring GitHub repo with invalid slug name: .github" in caplog.text
+    assert "Ignoring GitHub repo with invalid slug name: my.repo" in caplog.text
+
+    project = Project.objects.get(pk=456)
+    assert project.name == "test-2"
+    assert project.description == "Description"
+
+
 def test_create_or_update_users():
     User = get_user_model()
     github_data_1 = [

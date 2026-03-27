@@ -1,14 +1,27 @@
 import base64
+import logging
 import secrets
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_slug
 
 from . import github, rap_api
 from .models import Job, Project, Run, User
 
 
+logger = logging.getLogger(__name__)
+
+
 def create_or_update_projects():
     for record in github.get_repo_metadata(settings.GITHUB_ORG):
+        try:
+            validate_slug(record["name"])
+        except ValidationError:
+            logger.warning(
+                "Ignoring GitHub repo with invalid slug name: %s", record["name"]
+            )
+            continue
         Project.objects.update_or_create(
             id=record["id"],
             defaults={
