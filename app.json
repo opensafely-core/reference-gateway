@@ -15,8 +15,8 @@
       {
         "name": "Web health check",
         "type": "startup",
-        "description": "Check if the app responds to / url",
-        "path": "/",
+        "description": "Check if the app responds to the lightweight health endpoint",
+        "path": "/healthz/",
         "port": 8000,
         "attempts": 3,
         "initialDelay": 10,

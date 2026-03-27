@@ -4,6 +4,7 @@ from . import api_views, views
 
 
 urlpatterns = [
+    path("healthz/", views.healthz, name="healthz"),
     path("", views.projects, name="projects"),
     path("projects/<slug:name>/", views.project, name="project"),
     path("runs/<str:run_id>/", views.run, name="run"),

@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -23,6 +23,10 @@ def projects(request):
         "projects.html",
         {"projects": projects},
     )
+
+
+def healthz(request):
+    return HttpResponse("ok", content_type="text/plain")
 
 
 def project(request, name):

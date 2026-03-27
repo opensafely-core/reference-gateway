@@ -11,6 +11,12 @@ def test_get_projects(client, project):
     assert project.name in rsp.content.decode()
 
 
+def test_healthz(client):
+    rsp = client.get("/healthz/")
+    assert rsp.status_code == 200
+    assert rsp.content.decode() == "ok"
+
+
 def test_get_project_with_no_current_run_not_logged_in(
     client, project_with_no_current_run
 ):
