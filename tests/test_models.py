@@ -2,7 +2,12 @@ from datetime import timedelta
 
 from django.utils import timezone
 
-from gateway.actions import _create_or_update_jobs, _create_run, _mark_run_cancelled
+from gateway.actions import (
+    _create_or_update_jobs,
+    _create_run,
+    _mark_run_cancelled,
+    _mark_run_unrecognised,
+)
 from gateway.models import Job, Run
 
 
@@ -110,6 +115,12 @@ def test_run_state_cancelled(project, user):
     _create_or_update_jobs(run=run, jobs_data=_build_job_data("running", "pending"))
     _mark_run_cancelled(run=run)
     assert run.state == Run.State.CANCELLED
+
+
+def test_run_state_failed_due_to_being_unknown_to_controller(project, user):
+    run = _create_run(rap_id="abcd1234efgh5678", project=project, user=user)
+    _mark_run_unrecognised(run=run)
+    assert run.state == Run.State.FAILED
 
 
 def test_run_jobs_ordered_by_earliest_start(project, user):

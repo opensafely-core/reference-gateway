@@ -258,6 +258,23 @@ def test_update_run(project, user):
     assert count_job.completed_at is None
 
 
+def test_update_run_unrecognised(project, user):
+    run = _create_run(rap_id="abcd1234efgh5678", project=project, user=user)
+
+    rap_api_data_1 = {
+        "jobs": [],
+        "unrecognised_rap_ids": ["abcd1234efgh5678"],
+    }
+
+    with mocked_responses(post_data=rap_api_data_1):
+        update_run(run=run)
+
+    run.refresh_from_db()
+
+    assert run.state == Run.State.FAILED
+    assert run.jobs.count() == 0
+
+
 def test_cancel_run(project, user):
     run = _create_run(rap_id="abcd1234efgh5678", project=project, user=user)
     _create_or_update_jobs(

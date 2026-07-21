@@ -61,6 +61,7 @@ class Run(models.Model):
         related_name="runs",
     )
     cancelled = models.BooleanField(default=False)
+    unrecognised = models.BooleanField(default=False)
 
     @property
     def actions(self):
@@ -70,6 +71,10 @@ class Run(models.Model):
     def state(self):
         if self.cancelled:
             return Run.State.CANCELLED
+        if self.unrecognised:
+            # We do not know what happened to this run as the
+            # rap controller does not recognise it - mark as failed.
+            return Run.State.FAILED
 
         job_states = [job.state for job in self.jobs.all()]
         if all(state == Job.State.PENDING for state in job_states):
