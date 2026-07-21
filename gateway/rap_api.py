@@ -2,7 +2,7 @@ import httpx
 from django.conf import settings
 
 
-TIMEOUT = 10
+TIMEOUT = 30
 
 
 def create(*, rap_id, project_name, commit, username):

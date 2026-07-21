@@ -65,6 +65,9 @@ def update_run(*, run):
     Update a run with data from the RAP Controller.
     """
     data = rap_api.status(rap_ids=[run.id])
+    if run.id in data.get("unrecognised_rap_ids", []):
+        _mark_run_unrecognised(run=run)
+        return
     _create_or_update_jobs(run=run, jobs_data=data["jobs"])
 
 
@@ -92,6 +95,11 @@ def _create_or_update_jobs(*, run, jobs_data):
         job.started_at = job_datum["started_at"]
         job.completed_at = job_datum["completed_at"]
         job.save()
+
+
+def _mark_run_unrecognised(*, run):
+    run.unrecognised = True
+    run.save()
 
 
 def _mark_run_cancelled(*, run):
